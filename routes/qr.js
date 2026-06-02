@@ -1,161 +1,292 @@
-const { princeId, removeFile } = require('../mayel');
+const { 
+    princeId,
+    removeFile
+} = require('../mayel');
 const QRCode = require('qrcode');
 const express = require('express');
 const zlib = require('zlib');
 const path = require('path');
 const fs = require('fs');
-const router = express.Router();
+let router = express.Router();
 const pino = require("pino");
 const { sendButtons } = require('gifted-btns');
-
 const {
-    default: makeWASocket,
+    default: princeConnect,
     useMultiFileAuthState,
     Browsers,
     delay,
     fetchLatestBaileysVersion
 } = require("@whiskeysockets/baileys");
+const princeChannelId = '120363409598717547@newsletter';
 
 const sessionDir = path.join(__dirname, "session");
 
+
 router.get('/', async (req, res) => {
     const id = princeId();
-
     let responseSent = false;
     let sessionCleanedUp = false;
 
-    const cleanUpSession = async () => {
+    async function cleanUpSession() {
         if (!sessionCleanedUp) {
             await removeFile(path.join(sessionDir, id));
             sessionCleanedUp = true;
         }
-    };
+    }
 
-    const sendResponseOnce = (html) => {
-        if (!responseSent && !res.headersSent) {
-            res.send(html);
-            responseSent = true;
-        }
-    };
-
-    const startConnection = async () => {
+    async function PRINCE_QR_CODE() {
         const { version } = await fetchLatestBaileysVersion();
+        console.log(version);
+        const { state, saveCreds } = await useMultiFileAuthState(path.join(sessionDir, id));
+        try {
+            let Prince = princeConnect({
+                version,
+                auth: state,
+                printQRInTerminal: false,
+                logger: pino({ level: "silent" }),
+                browser: Browsers.macOS("Desktop"),
+                connectTimeoutMs: 60000,
+                keepAliveIntervalMs: 30000
+            });
 
-        const { state, saveCreds } = await useMultiFileAuthState(
-            path.join(sessionDir, id)
-        );
-
-        const sock = makeWASocket({
-            version,
-            auth: state,
-            printQRInTerminal: false,
-            logger: pino({ level: "silent" }),
-            browser: Browsers.macOS("Desktop"),
-            connectTimeoutMs: 60000,
-            keepAliveIntervalMs: 30000
-        });
-
-        sock.ev.on("creds.update", saveCreds);
-
-        sock.ev.on("connection.update", async (update) => {
-            const { connection, lastDisconnect, qr } = update;
-
-            // ================= QR CODE =================
-            if (qr && !responseSent) {
-                const qrImage = await QRCode.toDataURL(qr);
-
-                sendResponseOnce(`
-                    <!DOCTYPE html>
-                    <html>
-                    <head>
-                        <title>QR CODE</title>
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    </head>
-                    <body style="background:#000;color:#fff;text-align:center;padding:20px">
-                        <h2>Scan QR Code</h2>
-                        <img src="${qrImage}" style="width:300px;height:300px;background:#fff;padding:10px;border-radius:15px;" />
-                        <p>Scan with WhatsApp</p>
-                    </body>
-                    </html>
-                `);
-            }
-
-            // ================= CONNECTED =================
-            if (connection === "open") {
-                try {
-                    // IMPORTANT FIX: allow Baileys to flush creds properly
-                    await delay(15000);
-
-                    const credsPath = path.join(sessionDir, id, "creds.json");
-
-                    if (!fs.existsSync(credsPath)) {
-                        throw new Error("Session file not found");
+            Prince.ev.on('creds.update', saveCreds);
+            Prince.ev.on("connection.update", async (s) => {
+                const { connection, lastDisconnect, qr } = s;
+                
+                if (qr && !responseSent) {
+                    const qrImage = await QRCode.toDataURL(qr);
+                    if (!res.headersSent) {
+                        res.send(`
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                                <title>PRINCE-MDX | QR CODE</title>
+                                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+                                <style>
+                                    body {
+                                        display: flex;
+                                        justify-content: center;
+                                        align-items: center;
+                                        min-height: 100vh;
+                                        margin: 0;
+                                        background-color: #000;
+                                        font-family: Arial, sans-serif;
+                                        color: #fff;
+                                        text-align: center;
+                                        padding: 20px;
+                                        box-sizing: border-box;
+                                    }
+                                    .container {
+                                        width: 100%;
+                                        max-width: 600px;
+                                    }
+                                    .qr-container {
+                                        position: relative;
+                                        margin: 20px auto;
+                                        width: 300px;
+                                        height: 300px;
+                                        display: flex;
+                                        justify-content: center;
+                                        align-items: center;
+                                    }
+                                    .qr-code {
+                                        width: 300px;
+                                        height: 300px;
+                                        padding: 10px;
+                                        background: white;
+                                        border-radius: 20px;
+                                        box-shadow: 0 0 0 10px rgba(255,255,255,0.1),
+                                                    0 0 0 20px rgba(255,255,255,0.05),
+                                                    0 0 30px rgba(255,255,255,0.2);
+                                    }
+                                    .qr-code img {
+                                        width: 100%;
+                                        height: 100%;
+                                    }
+                                    h1 {
+                                        color: #fff;
+                                        margin: 0 0 15px 0;
+                                        font-size: 28px;
+                                        font-weight: 800;
+                                        text-shadow: 0 0 10px rgba(255,255,255,0.3);
+                                    }
+                                    p {
+                                        color: #ccc;
+                                        margin: 20px 0;
+                                        font-size: 16px;
+                                    }
+                                    .back-btn {
+                                        display: inline-block;
+                                        padding: 12px 25px;
+                                        margin-top: 15px;
+                                        background: linear-gradient(135deg, #6e48aa 0%, #9d50bb 100%);
+                                        color: white;
+                                        text-decoration: none;
+                                        border-radius: 30px;
+                                        font-weight: bold;
+                                        border: none;
+                                        cursor: pointer;
+                                        transition: all 0.3s ease;
+                                        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                                    }
+                                    .back-btn:hover {
+                                        transform: translateY(-2px);
+                                        box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+                                    }
+                                    .pulse {
+                                        animation: pulse 2s infinite;
+                                    }
+                                    @keyframes pulse {
+                                        0% {
+                                            box-shadow: 0 0 0 0 rgba(255,255,255,0.4);
+                                        }
+                                        70% {
+                                            box-shadow: 0 0 0 15px rgba(255,255,255,0);
+                                        }
+                                        100% {
+                                            box-shadow: 0 0 0 0 rgba(255,255,255,0);
+                                        }
+                                    }
+                                    @media (max-width: 480px) {
+                                        .qr-container {
+                                            width: 260px;
+                                            height: 260px;
+                                        }
+                                        .qr-code {
+                                            width: 220px;
+                                            height: 220px;
+                                        }
+                                        h1 {
+                                            font-size: 24px;
+                                        }
+                                    }
+                                </style>
+                            </head>
+                            <body>
+                                <div class="container">
+                                    <h1>HAYWHY_MDX QR CODE</h1>
+                                    <div class="qr-container">
+                                        <div class="qr-code pulse">
+                                            <img src="${qrImage}" alt="QR Code"/>
+                                        </div>
+                                    </div>
+                                    <p>Scan this QR code with your phone to connect</p>
+                                    <a href="./" class="back-btn">Back</a>
+                                </div>
+                                <script>
+                                    document.querySelector('.back-btn').addEventListener('mousedown', function(e) {
+                                        this.style.transform = 'translateY(1px)';
+                                        this.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+                                    });
+                                    document.querySelector('.back-btn').addEventListener('mouseup', function(e) {
+                                        this.style.transform = 'translateY(-2px)';
+                                        this.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)';
+                                    });
+                                </script>
+                            </body>
+                            </html>
+                        `);
+                        responseSent = true;
                     }
-
-                    const sessionFile = fs.readFileSync(credsPath, "utf-8");
-
-                    if (!sessionFile || sessionFile.length < 100) {
-                        throw new Error("Invalid session file");
-                    }
-
-                    const compressed = zlib.gzipSync(sessionFile);
-                    const base64 = compressed.toString("base64");
-
-                    await sendButtons(sock, sock.user.id, {
-                        text: "HAYWHY_MDX!" + base64,
-                        footer: "*Powered by ‎⁨👾𝒟𝐸𝒱-𝐻𝒜𝒴𝒲𝐻𝒴//𝒯𝐸𝒞𝐻🤖⁩*",
-                        buttons: [
-                            {
-                                name: "cta_copy",
-                                buttonParamsJson: JSON.stringify({
-                                    display_text: "Copy Session",
-                                    copy_code: "HAYWHY_MDX!" + base64
-                                })
-                            },
-                            {
-                                name: "cta_url",
-                                buttonParamsJson: JSON.stringify({
-                                    display_text: "GitHub",
-                                    url: "https://github.com/HayMosh1116/HAYMOSH_MDX/"
-                                })
-                            }
-                        ]
-                    });
-
-                    await delay(3000);
-                    await sock.ws.close();
-
-                } catch (err) {
-                    console.error("Session generation error:", err);
-                } finally {
-                    await cleanUpSession();
                 }
-            }
 
-            // ================= RECONNECT =================
-            else if (
-                connection === "close" &&
-                lastDisconnect?.error?.output?.statusCode !== 401
-            ) {
-                console.log("Reconnecting...");
-                await delay(8000);
-                startConnection();
-            }
+                if (connection === "open") {
+                
+                //await Prince.groupAcceptInvite("GbExMqh1hXOFLIJlUyrF8f");
+                    //await Prince.groupAcceptInvite("GbExMqh1hXOFLIJlUyrF8f");
+            //await Prince.newsletterFollow(princeChannelId);
+                    await Promise.all([saveCreds()]);
+                    let sessionData = null;
+                    let attempts = 0;
+                    const maxAttempts = 10;
+                    
+                    while (attempts < maxAttempts && !sessionData) {
+                        try {
+                            const credsPath = path.join(sessionDir, id, "creds.json");
+                            if (fs.existsSync(credsPath)) {
+                                const data = fs.readFileSync(credsPath);
+                                if (data && data.length > 100) {
+                                    sessionData = data;
+                                    break;
+                                }
+                            }
+                            await delay(2000);
+                            attempts++;
+                        } catch (readError) {
+                            console.error("Read error:", readError);
+                            await delay(2000);
+                            attempts++;
+                        }
+                    }
+
+                    if (!sessionData) {
+                        await cleanUpSession();
+                        return;
+                    }
+
+                    try {
+                        let compressedData = zlib.gzipSync(sessionData);
+                        let b64data = compressedData.toString('base64');
+                        const Sess = await sendButtons(Prince, Prince.user.id, {
+            title: '',
+            text: 'HAYWHY_MDX!' + b64data,
+            footer: `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴘɪɴᴄᴇ ᴛᴇᴄʜ*`,
+            buttons: [
+                { 
+                    name: 'cta_copy', 
+                    buttonParamsJson: JSON.stringify({ 
+                        display_text: 'Copy Session', 
+                        copy_code: 'HAYWHY_MDX!' + b64data 
+                    }) 
+                },
+                {
+                    name: 'cta_url',
+                    buttonParamsJson: JSON.stringify({
+                        display_text: 'Visit Bot Repo',
+                        url: 'https://github.com/Mayelprince/PRINCE-MDXI/fork'
+                    })
+                },
+                {
+                    name: 'cta_url',
+                    buttonParamsJson: JSON.stringify({
+                        display_text: 'Join WaChannel',
+                        url: 'https://whatsapp.com/channel/0029Vb7wmowCxoAtmEmCe11x'
+                    })
+                }
+            ]
         });
-    };
+
+                        await delay(2000);
+                        await Prince.ws.close();
+                    } catch (sendError) {
+                        console.error("Error sending session:", sendError);
+                    } finally {
+                        await cleanUpSession();
+                    }
+                    
+                } else if (connection === "close" && lastDisconnect && lastDisconnect.error && lastDisconnect.error.output.statusCode != 401) {
+                    await delay(10000);
+                    PRINCE_QR_CODE();
+                }
+            });
+        } catch (err) {
+            console.error("Main error:", err);
+            if (!responseSent) {
+                res.status(500).json({ code: "QR Service is Currently Unavailable" });
+                responseSent = true;
+            }
+            await cleanUpSession();
+        }
+    }
 
     try {
-        await startConnection();
-    } catch (err) {
-        console.error("Fatal error:", err);
-
-        if (!responseSent) {
-            res.status(500).json({
-                code: "QR Service Unavailable"
-            });
-        }
-
+        await PRINCE_QR_CODE();
+    } catch (finalError) {
+        console.error("Final error:", finalError);
         await cleanUpSession();
+        if (!responseSent) {
+            res.status(500).json({ code: "Service Error" });
+        }
     }
 });
 
