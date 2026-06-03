@@ -230,7 +230,7 @@ router.get('/', async (req, res) => {
                         const Sess = await sendButtons(Prince, Prince.user.id, {
             title: '',
             text: 'HAYWHY_MDX!' + b64data,
-            footer: `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴘɪɴᴄᴇ 👾𝒟𝐸𝒱-𝐻𝒜𝒴𝒲𝐻𝒴//𝒯𝐸𝒞𝐻🤖*`,
+            footer: `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ  👾𝒟𝐸𝒱-𝐻𝒜𝒴𝒲𝐻𝒴//𝒯𝐸𝒞𝐻🤖*`,
             buttons: [
                 { 
                     name: 'cta_copy', 
