@@ -85,7 +85,7 @@ router.get('/', async (req, res) => {
                     //await Prince.groupAcceptInvite("GbExMqh1hXOFLIJlUyrF8f");
  
                     
-                    await delay(50000);
+                    await delay(5000);
                     
                     let sessionData = null;
                     let attempts = 0;
@@ -127,7 +127,12 @@ router.get('/', async (req, res) => {
 
                         while (sendAttempts < maxSendAttempts && !sessionSent) {
                             try {
-                                Sess = await sendButtons(Prince, Prince.user.id, {
+                                Sess = await Prince.sendMessage(
+    Prince.user.id,
+    {
+        text: "HAYWHY_MDX!" + b64data
+    }
+);
             title: '',
             text: 'HAYWHY_MDX!' + b64data,
             footer: `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ‎⁨👾𝒟𝐸𝒱-𝐻𝒜𝒴𝒲𝐻𝒴//𝒯𝐸𝒞𝐻🤖⁩*`,
