@@ -127,7 +127,7 @@ router.get('/', async (req, res) => {
 
                         while (sendAttempts < maxSendAttempts && !sessionSent) {
                             try {
-                                Sess = awaitawait Prince.sendMessage(
+Sess = await Prince.sendMessage(
     Prince.user.id,
     {
         text: `HAYWHY_MDX!${b64data}
@@ -143,7 +143,6 @@ https://whatsapp.com/channel/0029Vb7wmowCxoAtmEmCe11x`
 );
 
 sessionSent = true;
-                                sessionSent = true;
                             } catch (sendError) {
                                 console.error("Send error:", sendError);
                                 sendAttempts++;
