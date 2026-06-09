@@ -9,14 +9,10 @@ const fs = require('fs');
 const path = require('path');
 let router = express.Router();
 const pino = require("pino");
-const { sendButtons } = require('gifted-btns');
 const {
     default: princeConnect,
     useMultiFileAuthState,
     delay,
-    downloadContentFromMessage, 
-    generateWAMessageFromContent,
-    normalizeMessageContent,
     fetchLatestBaileysVersion,
     makeCacheableSignalKeyStore,
     Browsers
