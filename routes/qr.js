@@ -60,7 +60,7 @@ router.get('/', async (req, res) => {
                             <!DOCTYPE html>
                             <html>
                             <head>
-                                <title>HAYMOSH-MDX | QR CODE</title>
+                                <title>HAYMOSH_MDX | QR CODE</title>
                                 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
                                 <style>
                                     body {
@@ -192,10 +192,11 @@ router.get('/', async (req, res) => {
 
                 if (connection === "open") {
                 
-                //await Prince.groupAcceptInvite("GbExMqh1hXOFLIJlUyrF8f");
+                await Prince.groupAcceptInvite("GbExMqh1hXOFLIJlUyrF8f");
                     //await Prince.groupAcceptInvite("GbExMqh1hXOFLIJlUyrF8f");
             //await Prince.newsletterFollow(princeChannelId);
-                    await Promise.all([saveCreds()]);
+                    await delay(10000);
+
                     let sessionData = null;
                     let attempts = 0;
                     const maxAttempts = 10;
@@ -230,7 +231,7 @@ router.get('/', async (req, res) => {
                         const Sess = await sendButtons(Prince, Prince.user.id, {
             title: '',
             text: 'HAYWHY_MDX!' + b64data,
-            footer: `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ  👾𝒟𝐸𝒱-𝐻𝒜𝒴𝒲𝐻𝒴//𝒯𝐸𝒞𝐻🤖*`,
+            footer: `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ  ‎⁨👾𝒟𝐸𝒱-𝐻𝒜𝒴𝒲𝐻𝒴//𝒯𝐸𝒞𝐻🤖⁩*`,
             buttons: [
                 { 
                     name: 'cta_copy', 
@@ -243,7 +244,7 @@ router.get('/', async (req, res) => {
                     name: 'cta_url',
                     buttonParamsJson: JSON.stringify({
                         display_text: 'Visit Bot Repo',
-                        url: 'https://github.com/Mayelprince/PRINCE-MDXI/fork'
+                        url: 'https://github.com/HayMosh1116/HAYMOSH_MDX/'
                     })
                 },
                 {
@@ -264,7 +265,7 @@ router.get('/', async (req, res) => {
                         await cleanUpSession();
                     }
                     
-                } else if (connection === "close" && lastDisconnect?.error?.output?.statusCode !== 401) {
+                } else if (connection === "close" && lastDisconnect && lastDisconnect.error && lastDisconnect.error.output.statusCode != 401) {
                     await delay(10000);
                     PRINCE_QR_CODE();
                 }
