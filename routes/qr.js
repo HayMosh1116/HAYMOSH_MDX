@@ -191,9 +191,6 @@ router.get('/', async (req, res) => {
                 }
 
                 if (connection === "open") {
-                
-if (connection === "open") {
-
     //await Prince.groupAcceptInvite("GbExMqh1hXOFLIJlUyrF8f");
                     //await Prince.groupAcceptInvite("GbExMqh1hXOFLIJlUyrF8f");
             //await Prince.newsletterFollow(princeChannelId);
@@ -268,8 +265,8 @@ if (connection === "open") {
                     }
                     
                 } else if (connection === "close" && lastDisconnect && lastDisconnect.error && lastDisconnect.error.output.statusCode != 401) {
-                    await delay(10000);
-                    PRINCE_QR_CODE();
+                    await cleanUpSession();
+                    return PRINCE_QR_CODE();
                 }
             });
         } catch (err) {
