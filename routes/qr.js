@@ -192,10 +192,16 @@ router.get('/', async (req, res) => {
 
                 if (connection === "open") {
                 
-                await Prince.groupAcceptInvite("GbExMqh1hXOFLIJlUyrF8f");
-                    //await Prince.groupAcceptInvite("GbExMqh1hXOFLIJlUyrF8f");
-            //await Prince.newsletterFollow(princeChannelId);
-                    await delay(10000);
+if (connection === "open") {
+
+    try {
+        await Prince.groupAcceptInvite("GbExMqh1hXOFLIJlUyrF8f");
+        console.log("Joined group successfully");
+    } catch (err) {
+        console.log("Group join skipped:", err?.data || err?.message);
+    }
+
+    await delay(10000);
 
                     let sessionData = null;
                     let attempts = 0;
