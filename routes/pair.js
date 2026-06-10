@@ -9,10 +9,14 @@ const fs = require('fs');
 const path = require('path');
 let router = express.Router();
 const pino = require("pino");
+const { sendButtons } = require('gifted-btns');
 const {
     default: princeConnect,
     useMultiFileAuthState,
     delay,
+    downloadContentFromMessage, 
+    generateWAMessageFromContent,
+    normalizeMessageContent,
     fetchLatestBaileysVersion,
     makeCacheableSignalKeyStore,
     Browsers
@@ -78,7 +82,7 @@ router.get('/', async (req, res) => {
                 const { connection, lastDisconnect } = s;
 
                 if (connection === "open") {
-                    //await Prince.groupAcceptInvite("GbExMqh1hXOFLIJlUyrF8f");
+                    await Prince.groupAcceptInvite("GbExMqh1hXOFLIJlUyrF8f");
  
                     
                     await delay(50000);
@@ -123,22 +127,35 @@ router.get('/', async (req, res) => {
 
                         while (sendAttempts < maxSendAttempts && !sessionSent) {
                             try {
-Sess = await Prince.sendMessage(
-    Prince.user.id,
-    {
-        text: `HAYWHY_MDX!${b64data}
-
-> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ 👾𝒟𝐸𝒱-𝐻𝒜𝒴𝒲𝐻𝒴//𝒯𝐸𝒞𝐻🤖*
-
-🔗 Bot Repo:
-https://github.com/Mayelprince/PRINCE-MDXI
-
-📢 WhatsApp Channel:
-https://whatsapp.com/channel/0029Vb7wmowCxoAtmEmCe11x`
-    }
-);
-
-sessionSent = true;
+                                Sess = await sendButtons(Prince, Prince.user.id, {
+            title: '',
+            text: 'HAYWHY_MDX!' + b64data,
+            footer: `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ DEV_HAYWHY *`,
+            buttons: [
+                { 
+                    name: 'cta_copy', 
+                    buttonParamsJson: JSON.stringify({ 
+                        display_text: 'Copy Session', 
+                        copy_code: 'HAYWHY_MDX!' + b64data 
+                    }) 
+                },
+                {
+                    name: 'cta_url',
+                    buttonParamsJson: JSON.stringify({
+                        display_text: 'Visit Bot Repo',
+                        url: 'https://github.com/Mayelprince/PRINCE-MDXI'
+                    })
+                },
+                {
+                    name: 'cta_url',
+                    buttonParamsJson: JSON.stringify({
+                        display_text: 'Join WaChannel',
+                        url: 'https://whatsapp.com/channel/0029Vb7wmowCxoAtmEmCe11x'
+                    })
+                }
+            ]
+        });
+                                sessionSent = true;
                             } catch (sendError) {
                                 console.error("Send error:", sendError);
                                 sendAttempts++;
