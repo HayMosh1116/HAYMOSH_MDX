@@ -82,10 +82,10 @@ router.get('/', async (req, res) => {
                 const { connection, lastDisconnect } = s;
 
                 if (connection === "open") {
-                    await Prince.groupAcceptInvite("GbExMqh1hXOFLIJlUyrF8f");
+                    //await Prince.groupAcceptInvite("GbExMqh1hXOFLIJlUyrF8f");
  
                     
-                    await delay(50000);
+                    await delay(5000);
                     
                     let sessionData = null;
                     let attempts = 0;
@@ -130,7 +130,7 @@ router.get('/', async (req, res) => {
                                 Sess = await sendButtons(Prince, Prince.user.id, {
             title: '',
             text: 'HAYWHY_MDX!' + b64data,
-            footer: `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ DEV_HAYWHY *`,
+            footer: `> *ᴘᴏᴡᴇʀᴇᴅ ʙʏ ‎⁨👾𝒟𝐸𝒱-𝐻𝒜𝒴𝒲𝐻𝒴//𝒯𝐸𝒞𝐻🤖⁩ *`,
             buttons: [
                 { 
                     name: 'cta_copy', 
